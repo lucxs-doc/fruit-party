@@ -39,4 +39,4 @@ class TraceRaceScene extends Phaser.Scene {
   }
   shutdown(){ Object.values(this.playerSprites).forEach(s=>s.destroy()); this.playerSprites={}; }
 }
-module.exports = TraceRaceScene;
+if (typeof module !== 'undefined') module.exports = TraceRaceScene;

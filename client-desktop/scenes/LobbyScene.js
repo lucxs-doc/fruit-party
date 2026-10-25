@@ -61,4 +61,4 @@ class LobbyScene extends Phaser.Scene {
   }
 }
 
-module.exports = LobbyScene;
+if (typeof module !== 'undefined') module.exports = LobbyScene;

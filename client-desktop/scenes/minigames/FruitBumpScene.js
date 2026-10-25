@@ -151,4 +151,4 @@ class FruitBumpScene extends Phaser.Scene {
   }
 }
 
-module.exports = FruitBumpScene;
+if (typeof module !== 'undefined') module.exports = FruitBumpScene;

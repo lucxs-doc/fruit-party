@@ -36,4 +36,4 @@ class MelonSledScene extends Phaser.Scene {
   }
   shutdown(){ Object.values(this.sledSprites).forEach(s=>s.destroy()); this.sledSprites={}; }
 }
-module.exports = MelonSledScene;
+if (typeof module !== 'undefined') module.exports = MelonSledScene;

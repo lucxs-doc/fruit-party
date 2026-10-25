@@ -44,4 +44,4 @@ class FruitKitchenScene extends Phaser.Scene {
   }
   shutdown(){ Object.values(this.playerSprites).forEach(s=>s.destroy()); Object.values(this.fruitSprites).forEach(s=>s.destroy()); this.playerSprites={}; this.fruitSprites={}; }
 }
-module.exports = FruitKitchenScene;
+if (typeof module !== 'undefined') module.exports = FruitKitchenScene;

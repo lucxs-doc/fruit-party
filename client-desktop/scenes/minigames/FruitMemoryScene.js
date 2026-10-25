@@ -41,4 +41,4 @@ class FruitMemoryScene extends Phaser.Scene {
   }
   shutdown(){ Object.values(this.cardSprites).forEach(s=>s.destroy()); this.cardSprites={}; }
 }
-module.exports = FruitMemoryScene;
+if (typeof module !== 'undefined') module.exports = FruitMemoryScene;

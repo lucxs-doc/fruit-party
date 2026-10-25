@@ -57,4 +57,4 @@ class GameOverScene extends Phaser.Scene {
   }
 }
 
-module.exports = GameOverScene;
+if (typeof module !== 'undefined') module.exports = GameOverScene;

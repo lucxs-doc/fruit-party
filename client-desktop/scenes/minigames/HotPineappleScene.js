@@ -46,4 +46,4 @@ class HotPineappleScene extends Phaser.Scene {
   }
   shutdown(){ Object.values(this.playerSprites).forEach(s=>s.destroy()); this.playerSprites={}; }
 }
-module.exports = HotPineappleScene;
+if (typeof module !== 'undefined') module.exports = HotPineappleScene;

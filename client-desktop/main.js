@@ -1,21 +1,19 @@
-const Phaser = require('phaser');
-
-// Scenes - Now using global classes instead of require
+// Phaser and scenes are loaded globally by index.html.
 const sceneList = [
-  'LobbyScene', 
-  'MinigameIntroScene', 
-  'FruitBumpScene', 
-  'FruitEscapeScene', 
-  'PineappleDodgeScene', 
-  'FruitShelfScene', 
-  'MelonSledScene', 
-  'FruitKingSaysScene', 
-  'FruitMemoryScene', 
-  'TraceRaceScene', 
-  'FruitKitchenScene', 
-  'HotPineappleScene', 
-  'ScoreboardScene', 
-  'GameOverScene'
+  LobbyScene,
+  MinigameIntroScene,
+  FruitBumpScene,
+  FruitEscapeScene,
+  PineappleDodgeScene,
+  FruitShelfScene,
+  MelonSledScene,
+  FruitKingSaysScene,
+  FruitMemoryScene,
+  TraceRaceScene,
+  FruitKitchenScene,
+  HotPineappleScene,
+  ScoreboardScene,
+  GameOverScene
 ];
 
 const config = {
@@ -49,6 +47,7 @@ game.socket = socket;
 socket.on('connect', () => { 
   console.log('Connected to', BACKEND_URL || 'same origin'); 
   game.scene.start('LobbyScene'); 
+  socket.emit('create_room');
 });
 
 socket.on('connect_error', (err) => { 

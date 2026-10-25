@@ -51,4 +51,4 @@ class MinigameIntroScene extends Phaser.Scene {
   }
 }
 
-module.exports = MinigameIntroScene;
+if (typeof module !== 'undefined') module.exports = MinigameIntroScene;

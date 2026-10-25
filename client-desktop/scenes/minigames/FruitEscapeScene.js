@@ -39,4 +39,4 @@ class FruitEscapeScene extends Phaser.Scene {
   }
   shutdown(){ Object.values(this.playerSprites).forEach(s=>s.destroy()); this.playerSprites={}; }
 }
-module.exports = FruitEscapeScene;
+if (typeof module !== 'undefined') module.exports = FruitEscapeScene;

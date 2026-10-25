@@ -69,4 +69,4 @@ class ScoreboardScene extends Phaser.Scene {
   }
 }
 
-module.exports = ScoreboardScene;
+if (typeof module !== 'undefined') module.exports = ScoreboardScene;
