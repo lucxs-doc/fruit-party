@@ -1,20 +1,22 @@
 const Phaser = require('phaser');
 
-// Scenes
-const LobbyScene = require('./scenes/LobbyScene');
-const MinigameIntroScene = require('./scenes/MinigameIntroScene');
-const ScoreboardScene = require('./scenes/ScoreboardScene');
-const GameOverScene = require('./scenes/GameOverScene');
-const FruitBumpScene = require('./scenes/minigames/FruitBumpScene');
-const FruitEscapeScene = require('./scenes/minigames/FruitEscapeScene');
-const PineappleDodgeScene = require('./scenes/minigames/PineappleDodgeScene');
-const FruitShelfScene = require('./scenes/minigames/FruitShelfScene');
-const MelonSledScene = require('./scenes/minigames/MelonSledScene');
-const FruitKingSaysScene = require('./scenes/minigames/FruitKingSaysScene');
-const FruitMemoryScene = require('./scenes/minigames/FruitMemoryScene');
-const TraceRaceScene = require('./scenes/minigames/TraceRaceScene');
-const FruitKitchenScene = require('./scenes/minigames/FruitKitchenScene');
-const HotPineappleScene = require('./scenes/minigames/HotPineappleScene');
+// Scenes - Now using global classes instead of require
+const sceneList = [
+  'LobbyScene', 
+  'MinigameIntroScene', 
+  'FruitBumpScene', 
+  'FruitEscapeScene', 
+  'PineappleDodgeScene', 
+  'FruitShelfScene', 
+  'MelonSledScene', 
+  'FruitKingSaysScene', 
+  'FruitMemoryScene', 
+  'TraceRaceScene', 
+  'FruitKitchenScene', 
+  'HotPineappleScene', 
+  'ScoreboardScene', 
+  'GameOverScene'
+];
 
 const config = {
   type: Phaser.AUTO,
@@ -29,13 +31,7 @@ const config = {
     height: 720,
   },
   physics: { default: 'arcade', arcade: { debug: false } },
-  scene: [
-    LobbyScene, MinigameIntroScene,
-    FruitBumpScene, FruitEscapeScene, PineappleDodgeScene, FruitShelfScene,
-    MelonSledScene, FruitKingSaysScene, FruitMemoryScene,
-    TraceRaceScene, FruitKitchenScene, HotPineappleScene,
-    ScoreboardScene, GameOverScene
-  ],
+  scene: sceneList, 
 };
 
 const game = new Phaser.Game(config);
@@ -46,15 +42,19 @@ game.players = [];
 game.currentMinigame = null;
 game.accumulatedScores = [];
 
-// Configurable backend URL - set via window.BACKEND_URL or auto-detect
-const BACKEND_URL = window.BACKEND_URL || (location.hostname === 'localhost' ? '' : `https://${location.hostname.replace(/^[^.]+\./, '')}`);
-// If on Netlify/Vercel, backend is on separate domain. Set window.BACKEND_URL in index.html before loading main.js
-
+const BACKEND_URL = window.BACKEND_URL || (location.hostname === 'localhost' ? '' : `https://${location.hostname.replace(/^[^.]+\\./, '')}`);
 const socket = io(BACKEND_URL, { transports: ['websocket', 'polling'] });
 game.socket = socket;
 
-socket.on('connect', () => { console.log('Connected to', BACKEND_URL || 'same origin'); game.scene.start('LobbyScene'); });
-socket.on('connect_error', (err) => { console.error('Socket connection error:', err); alert('Erro de conexão com servidor. Verifique BACKEND_URL.'); });
+socket.on('connect', () => { 
+  console.log('Connected to', BACKEND_URL || 'same origin'); 
+  game.scene.start('LobbyScene'); 
+});
+
+socket.on('connect_error', (err) => { 
+  console.error('Socket connection error:', err); 
+  alert('Erro de conexão com servidor. Verifique BACKEND_URL.'); 
+});
 
 socket.on('room_created', ({ code }) => { game.roomCode = code; });
 

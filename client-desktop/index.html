@@ -15,12 +15,30 @@
   <!-- CONFIGURE BACKEND URL HERE FOR PRODUCTION -->
   <script>
     // DEV: leave empty for same-origin
-    // PROD: set to your Railway/Render/Fly.io URL
-    // window.BACKEND_URL = 'https://fruit-party-server.up.railway.app';
+    // PROD: set to your Render URL
+    // window.BACKEND_URL = 'https://fruit-party.onrender.com';
   </script>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+
+  <!-- Load Scenes First (Global Classes) -->
+  <script src="scenes/LobbyScene.js"></script>
+  <script src="scenes/MinigameIntroScene.js"></script>
+  <script src="scenes/ScoreboardScene.js"></script>
+  <script src="scenes/GameOverScene.js"></script>
+  <script src="scenes/minigames/FruitBumpScene.js"></script>
+  <script src="scenes/minigames/FruitEscapeScene.js"></script>
+  <script src="scenes/minigames/PineappleDodgeScene.js"></script>
+  <script src="scenes/minigames/FruitShelfScene.js"></script>
+  <script src="scenes/minigames/MelonSledScene.js"></script>
+  <script src="scenes/minigames/FruitKingSaysScene.js"></script>
+  <script src="scenes/minigames/FruitMemoryScene.js"></script>
+  <script src="scenes/minigames/TraceRaceScene.js"></script>
+  <script src="scenes/minigames/FruitKitchenScene.js"></script>
+  <script src="scenes/minigames/HotPineappleScene.js"></script>
+
+  <!-- Load Game Main Logic -->
   <script src="main.js"></script>
 </body>
 </html>
