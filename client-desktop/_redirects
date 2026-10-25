@@ -1,0 +1,5 @@
+# SPA fallback
+/*    /index.html   200
+
+# Mobile subpath
+/mobile/*    /mobile/:splat   200

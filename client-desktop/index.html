@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Fruit Party - Desktop</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#1a1a2e; overflow:hidden; font-family:Arial, sans-serif; }
+    #game-container { width:100vw; height:100vh; }
+  </style>
+</head>
+<body>
+  <div id="game-container"></div>
+
+  <!-- CONFIGURE BACKEND URL HERE FOR PRODUCTION -->
+  <script>
+    // DEV: leave empty for same-origin
+    // PROD: set to your Railway/Render/Fly.io URL
+    // window.BACKEND_URL = 'https://fruit-party-server.up.railway.app';
+  </script>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

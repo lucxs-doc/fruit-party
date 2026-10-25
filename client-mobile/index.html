@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Fruit Party - Controle</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:#1a1a2e; color:#fff; font-family:Arial, sans-serif; height:100vh; overflow:hidden; touch-action:none; }
+    #app { height:100vh; display:flex; flex-direction:column; }
+    .screen { display:none; flex-direction:column; align-items:center; justify-content:center; height:100%; padding:20px; text-align:center; }
+    .screen.active { display:flex; }
+    h1 { font-size:2.5rem; margin-bottom:1rem; color:#ffeb3b; text-shadow:0 0 10px #e91e63; }
+    h2 { font-size:1.5rem; margin-bottom:0.5rem; color:#fff; }
+    p { color:#aaa; margin-bottom:1rem; }
+    .input-group { display:flex; flex-direction:column; gap:12px; width:100%; max-width:300px; margin-bottom:20px; }
+    input { padding:16px; font-size:1.2rem; border:none; border-radius:8px; background:#2d2d44; color:#fff; text-align:center; }
+    input::placeholder { color:#888; }
+    button { padding:16px 32px; font-size:1.2rem; font-weight:bold; border:none; border-radius:8px; background:#e91e63; color:#fff; cursor:pointer; }
+    button:active { transform:scale(0.98); }
+    button:disabled { background:#555; cursor:not-allowed; }
+    .code-display { font-size:3rem; font-weight:bold; letter-spacing:0.5em; color:#ffeb3b; margin:1rem 0; font-family:monospace; }
+    .players-list { list-style:none; width:100%; max-width:300px; margin-top:1rem; }
+    .players-list li { padding:12px; background:#2d2d44; margin:4px 0; border-radius:8px; display:flex; justify-content:space-between; }
+    .you { background:#e91e63 !important; }
+    #gameScreen { position:relative; flex-direction:column; }
+    #gameInfo { position:absolute; top:10px; left:10px; right:10px; text-align:center; pointer-events:none; z-index:10; }
+    #minigameName { font-size:1.2rem; font-weight:bold; color:#ffeb3b; }
+    #timer { font-size:1rem; color:#ff5252; margin-top:4px; }
+    #roundInfo { font-size:0.9rem; color:#888; margin-top:4px; }
+    #controls { position:absolute; bottom:0; left:0; right:0; padding:20px; display:flex; flex-direction:column; gap:15px; align-items:center; }
+    /* Joystick */
+    .joystick-container { width:140px; height:140px; position:relative; }
+    .joystick-base { width:100%; height:100%; border:3px solid #444; border-radius:50%; background:#2d2d44; position:relative; }
+    .joystick-stick { width:50px; height:50px; border-radius:50%; background:#e91e63; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); box-shadow:0 4px 12px rgba(233,30,99,0.5); transition:transform 0.05s linear; }
+    /* Buttons row */
+    .btn-row { display:flex; gap:15px; justify-content:center; flex-wrap:wrap; }
+    .action-btn { width:80px; height:80px; border-radius:50%; border:none; font-size:0.9rem; font-weight:bold; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+    .action-btn:active { transform:scale(0.95); }
+    .action-btn.disabled { opacity:0.5; pointer-events:none; }
+    .btn-red { background:linear-gradient(135deg, #ff5252, #f44336); }
+    .btn-green { background:linear-gradient(135deg, #00e676, #00c853); }
+    .btn-blue { background:linear-gradient(135deg, #2979ff, #2962ff); }
+    .btn-yellow { background:linear-gradient(135deg, #ffeb3b, #fdd835); color:#000; }
+    .btn-purple { background:linear-gradient(135deg, #aa00ff, #7b1fa2); }
+    .cooldown-text { font-size:0.7rem; color:#ffeb3b; margin-top:4px; text-align:center; }
+    /* Direction Pad */
+    .dpad { display:grid; grid-template:repeat(3,1fr)/repeat(3,1fr); gap:4px; width:140px; height:140px; }
+    .dpad-btn { background:#2d2d44; border:2px solid #444; border-radius:8px; color:#fff; font-size:1.5rem; display:flex; align-items:center; justify-content:center; }
+    .dpad-btn:active { background:#e91e63; }
+    .dpad-btn.empty { background:transparent; border:none; }
+    /* Number pad */
+    .numpad { display:grid; grid-template:repeat(2,1fr)/repeat(2,1fr); gap:8px; width:160px; }
+    .num-btn { aspect-ratio:1; background:#2d2d44; border:2px solid #444; border-radius:12px; color:#ffeb3b; font-size:2rem; font-weight:bold; }
+    .num-btn:active { background:#e91e63; color:#fff; }
+    /* Swipe area */
+    .swipe-area { width:100%; height:200px; background:rgba(255,255,255,0.05); border-radius:12px; position:relative; }
+    .swipe-hint { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#888; font-size:1rem; pointer-events:none; }
+    /* Accelerometer */
+    .accel-display { font-size:1.2rem; color:#ffeb3b; margin:10px 0; }
+    /* Overlays */
+    .overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:100; padding:20px; }
+    .overlay.active { display:flex; }
+    .overlay h2 { font-size:2rem; margin-bottom:1rem; }
+    .overlay .score { font-size:1.5rem; color:#ffeb3b; margin:0.5rem 0; }
+    .control-panel { display:none; }
+    .control-panel.active { display:flex; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Lobby -->
+    <div id="lobbyScreen" class="screen active">
+      <h1>FRUIT PARTY 🍓🍌🍉</h1>
+      <p>Digite o código da sala e seu nome</p>
+      <div class="input-group">
+        <input type="text" id="codeInput" placeholder="CÓDIGO" maxlength="6" style="text-transform:uppercase;">
+        <input type="text" id="nameInput" placeholder="SEU NOME" maxlength="12">
+        <button id="joinBtn">ENTRAR NA SALA</button>
+      </div>
+    </div>
+
+    <!-- Waiting -->
+    <div id="waitScreen" class="screen">
+      <h1>AGUARDANDO INÍCIO</h1>
+      <div class="code-display" id="roomCodeDisplay"></div>
+      <p>Jogadores na sala:</p>
+      <ul class="players-list" id="playersList"></ul>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen" class="screen">
+      <div id="gameInfo">
+        <div id="minigameName"></div>
+        <div id="timer">⏱ --</div>
+        <div id="roundInfo"></div>
+      </div>
+      <div id="controls">
+        <!-- Control panels will be inserted here -->
+        <div id="controlJoystick" class="control-panel">
+          <div class="joystick-container">
+            <div class="joystick-base" id="joystickBase"><div class="joystick-stick" id="joystickStick"></div></div>
+          </div>
+        </div>
+        <div id="controlDPad" class="control-panel">
+          <div class="dpad">
+            <div class="dpad-btn empty"></div>
+            <div class="dpad-btn" data-dir="up">▲</div>
+            <div class="dpad-btn empty"></div>
+            <div class="dpad-btn" data-dir="left">◀</div>
+            <div class="dpad-btn empty"></div>
+            <div class="dpad-btn" data-dir="right">▶</div>
+            <div class="dpad-btn empty"></div>
+            <div class="dpad-btn" data-dir="down">▼</div>
+            <div class="dpad-btn empty"></div>
+          </div>
+        </div>
+        <div id="controlNumpad" class="control-panel">
+          <div class="numpad">
+            <button class="num-btn" data-num="0">1</button>
+            <button class="num-btn" data-num="1">2</button>
+            <button class="num-btn" data-num="2">3</button>
+            <button class="num-btn" data-num="3">4</button>
+          </div>
+        </div>
+        <div id="controlSwipe" class="control-panel">
+          <div class="swipe-area" id="swipeArea"><div class="swipe-hint">Deslize ↑ ↓ ← →</div></div>
+        </div>
+        <div id("controlAccelerometer" class="control-panel">
+          <div class="accel-display">Incline o celular para guiar</div>
+          <div id="accelVals">α: -- β: -- γ: --</div>
+        </div>
+        <!-- Action buttons row -->
+        <div id="actionButtons" class="btn-row" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- Result Overlay -->
+    <div id="resultOverlay" class="overlay">
+      <h2 id="resultTitle"></h2>
+      <div class="score" id="resultScore"></div>
+      <p id="resultDetails"></p>
+    </div>
+    <!-- Final Overlay -->
+    <div id="finalOverlay" class="overlay">
+      <h2>🏆 FIM DE JOGO 🏆</h2>
+      <div class="score" id="winnerName"></div>
+      <div id="finalRanking"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    // CONFIGURE BACKEND URL HERE FOR PRODUCTION
+    // DEV: leave empty for same-origin
+    // PROD: set to your Railway/Render/Fly.io URL
+    // const BACKEND_URL = 'https://fruit-party-server.up.railway.app';
+    const BACKEND_URL = ''; // set via build or leave empty for same-origin
+    const socket = io(BACKEND_URL, { transports: ['websocket', 'polling'] });
+    let roomCode = new URLSearchParams(window.location.search).get('code') || '';
+    let playerName = '';
+    let myPlayerId = socket.id;
+    let currentMinigame = null;
+    let currentControl = null;
+
+    // DOM
+    const lobbyScreen=document.getElementById('lobbyScreen'), waitScreen=document.getElementById('waitScreen'), gameScreen=document.getElementById('gameScreen');
+    const codeInput=document.getElementById('codeInput'), nameInput=document.getElementById('nameInput'), joinBtn=document.getElementById('joinBtn');
+    const roomCodeDisplay=document.getElementById('roomCodeDisplay'), playersList=document.getElementById('playersList');
+    const minigameNameEl=document.getElementById('minigameName'), timerEl=document.getElementById('timer'), roundInfoEl=document.getElementById('roundInfo');
+    const actionButtons=document.getElementById('actionButtons');
+    const resultOverlay=document.getElementById('resultOverlay'), resultTitle=document.getElementById('resultTitle'), resultScore=document.getElementById('resultScore'), resultDetails=document.getElementById('resultDetails');
+    const finalOverlay=document.getElementById('finalOverlay'), winnerName=document.getElementById('winnerName'), finalRanking=document.getElementById('finalRanking');
+
+    // Control panels
+    const panels = {
+      joystick: document.getElementById('controlJoystick'),
+      dpad: document.getElementById('controlDPad'),
+      numpad: document.getElementById('controlNumpad'),
+      swipe: document.getElementById('controlSwipe'),
+      accel: document.getElementById('controlAccelerometer'),
+    };
+
+    if (roomCode) codeInput.value = roomCode;
+
+    function showScreen(screen) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); screen.classList.add('active'); }
+    function showControls(controlName) { Object.values(panels).forEach(p=>p.classList.remove('active')); if(panels[controlName]) panels[controlName].classList.add('active'); currentControl=controlName; }
+    function showActionButtons(btns) { actionButtons.style.display='flex'; actionButtons.innerHTML=''; btns.forEach(b=>{ const btn=document.createElement('button'); btn.className=`action-btn ${b.class}`; btn.textContent=b.label; btn.dataset.action=b.action; btn.dataset.payload=JSON.stringify(b.payload||{}); btn.onclick=()=>sendAction(b.action,b.payload); if(b.id) btn.id=b.id; actionButtons.appendChild(btn); }); }
+    function hideActionButtons() { actionButtons.style.display='none'; actionButtons.innerHTML=''; }
+
+    // Joystick logic
+    const joystickBase=document.getElementById('joystickBase'), joystickStick=document.getElementById('joystickStick');
+    let joystickActive=false, joystickPointerId=null, joystickDir={x:0,y:0};
+    const JOY_R=70, STICK_R=25, MAX_DIST=JOY_R-STICK_R;
+    function updateJoystick(){ if(!joystickActive) return; const dist=Math.min(MAX_DIST,Math.hypot(joystickDir.x,joystickDir.y)); const ang=Math.atan2(joystickDir.y,joystickDir.x); joystickStick.style.transform=`translate(-50%,-50%) translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px)`; sendAction('move',{x:joystickDir.x,y:joystickDir.y}); }
+    joystickBase.addEventListener('touchstart',e=>{e.preventDefault();const t=e.changedTouches[0];if(joystickActive)return;joystickActive=true;joystickPointerId=t.identifier;const r=joystickBase.getBoundingClientRect();joystickDir.x=t.clientX-(r.left+r.width/2);joystickDir.y=t.clientY-(r.top+r.height/2);updateJoystick();},{passive:false});
+    window.addEventListener('touchmove',e=>{if(!joystickActive)return;const t=Array.from(e.changedTouches).find(t=>t.identifier===joystickPointerId);if(!t)return;e.preventDefault();const r=joystickBase.getBoundingClientRect();joystickDir.x=t.clientX-(r.left+r.width/2);joystickDir.y=t.clientY-(r.top+r.height/2);updateJoystick();},{passive:false});
+    window.addEventListener('touchend',e=>{const t=Array.from(e.changedTouches).find(t=>t.identifier===joystickPointerId);if(t){joystickActive=false;joystickPointerId=null;joystickDir={x:0,y:0};joystickStick.style.transform='translate(-50%,-50%)';sendAction('move',{x:0,y:0});}},{passive:false});
+    // mouse
+    joystickBase.addEventListener('mousedown',e=>{joystickActive=true;const r=joystickBase.getBoundingClientRect();joystickDir.x=e.clientX-(r.left+r.width/2);joystickDir.y=e.clientY-(r.top+r.height/2);updateJoystick();});
+    window.addEventListener('mousemove',e=>{if(!joystickActive)return;const r=joystickBase.getBoundingClientRect();joystickDir.x=e.clientX-(r.left+r.width/2);joystickDir.y=e.clientY-(r.top+r.height/2);updateJoystick();});
+    window.addEventListener('mouseup',()=>{if(joystickActive){joystickActive=false;joystickDir={x:0,y:0};joystickStick.style.transform='translate(-50%,-50%)';sendAction('move',{x:0,y:0});}});
+
+    // D-pad
+    document.querySelectorAll('.dpad-btn[data-dir]').forEach(btn=>{ const dir=btn.dataset.dir; const payload={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}}[dir]; ['touchstart','mousedown'].forEach(ev=>btn.addEventListener(ev,e=>{e.preventDefault();sendAction('jump',{dir});sendAction('move',payload);})); ['touchend','mouseup','mouseleave'].forEach(ev=>btn.addEventListener(ev,()=>sendAction('move',{x:0,y:0})); ); });
+
+    // Numpad
+    document.querySelectorAll('.num-btn').forEach(btn=>{ btn.addEventListener('click',()=>sendAction('press',{btn:parseInt(btn.dataset.num)})); });
+
+    // Swipe area
+    const swipeArea=document.getElementById('swipeArea');
+    let swipeStart=null;
+    swipeArea.addEventListener('touchstart',e=>{swipeStart={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
+    swipeArea.addEventListener('touchend',e=>{if(!swipeStart)return;const end={x:e.changedTouches[0].clientX,y:e.changedTouches[0].clientY};const dx=end.x-swipeStart.x,dy=end.y-swipeStart.y;let dir;if(Math.abs(dx)>Math.abs(dy)) dir=dx>0?'right':'left'; else dir=dy>0?'down':'up';sendAction('swipe',{dir});swipeStart=null;},{passive:true});
+    // mouse swipe
+    swipeArea.addEventListener('mousedown',e=>{swipeStart={x:e.clientX,y:e.clientY};});
+    window.addEventListener('mouseup',e=>{if(swipeStart){const end={x:e.clientX,y:e.clientY};const dx=end.x-swipeStart.x,dy=end.y-swipeStart.y;let dir;if(Math.abs(dx)>Math.abs(dy)) dir=dx>0?'right':'left'; else dir=dy>0?'down':'up';sendAction('swipe',{dir});swipeStart=null;}});
+
+    // Accelerometer
+    let accelEnabled=false;
+    if(window.DeviceOrientationEvent){ window.addEventListener('deviceorientation',e=>{if(!accelEnabled)return;const {alpha,beta,gamma}=e;document.getElementById('accelVals').textContent=`α:${alpha?.toFixed(1)} β:${beta?.toFixed(1)} γ:${gamma?.toFixed(1)}`;sendAction('steer',{dir:gamma/90});});}
+
+    function sendAction(action,payload){ if(!roomCode)return; socket.emit('player_input',{roomCode,playerId:myPlayerId,action,payload}); }
+
+    // Join
+    joinBtn.addEventListener('click',()=>{roomCode=codeInput.value.trim().toUpperCase();playerName=nameInput.value.trim()||'Jogador';if(!roomCode)return alert('Digite o código');socket.emit('join_room',{code:roomCode,name:playerName});});
+
+    // Socket events
+    socket.on('connect',()=>{myPlayerId=socket.id;});
+    socket.on('join_error',({message})=>alert(message));
+    socket.on('player_joined',({players})=>{roomCodeDisplay.textContent=roomCode;playersList.innerHTML=players.map(p=>`<li class="${p.id===myPlayerId?'you':''}">${p.name}${p.id===myPlayerId?' (VOCÊ)':''}</li>`).join('');if(players.find(p=>p.id===myPlayerId))showScreen(waitScreen);});
+    socket.on('minigame_intro',(data)=>{currentMinigame=data;showScreen(gameScreen);minigameNameEl.textContent=data.name.replace(/([A-Z])/g,' $1').trim();roundInfoEl.textContent=`Rodada ${data.round} / ${data.totalRounds}`;timerEl.textContent=`⏱ ${data.duration/1000}s`;
+      // Setup controls based on minigame
+      hideActionButtons();
+      switch(data.name){
+        case 'FruitBump':
+          showControls('joystick');
+          showActionButtons([{id:'boostBtn',label:'IMPULSO',action:'boost',payload:{x:0,y:-1},class:'btn-green'}]);
+          break;
+        case 'FruitEscape':
+          showControls('dpad');
+          break;
+        case 'PineappleDodge':
+          showControls('swipe');
+          break;
+        case 'FruitShelf':
+          showControls('dpad');
+          break;
+        case 'MelonSled':
+          showControls('dpad');
+          showActionButtons([{label:'◀ ESQ',action:'turn',payload:{dir:-1},class:'btn-blue'},{label:'DIR ▶',action:'turn',payload:{dir:1},class:'btn-red'}]);
+          break;
+        case 'FruitKingSays':
+          showControls('numpad');
+          break;
+        case 'FruitMemory':
+          showControls('numpad');
+          break;
+        case 'TraceRace':
+          if(window.DeviceOrientationEvent){showControls('accel');accelEnabled=true;}else{showControls('joystick');}
+          break;
+        case 'FruitKitchen':
+          showControls('joystick');
+          showActionButtons([{label:'PEGAR/ENTREGAR',action:'interact',payload:{},class:'btn-yellow'}]);
+          break;
+        case 'HotPineapple':
+          showActionButtons([{id:'passBtn',label:'PASSAR 🍍',action:'pass',payload:{},class:'btn-purple'}]);
+          break;
+        default:
+          showControls('joystick');
+      }
+    });
+    socket.on('minigame_start',()=>{});
+    socket.on('game_state_update',({state})=>{if(state.timeLeft!==undefined)timerEl.textContent=`⏱ ${Math.ceil(state.timeLeft)}s`;
+      // Update specific UI per minigame
+      if(currentMinigame?.name==='FruitBump' && state.fruits && state.fruits[myPlayerId]){
+        const f=state.fruits[myPlayerId];const btn=document.getElementById('boostBtn');if(btn){btn.classList.toggle('disabled',!f.boostReady);btn.textContent=f.boostReady?'IMPULSO':`${(f.boostCooldown/1000).toFixed(1)}s`;}}
+      if(currentMinigame?.name==='HotPineapple' && state.players && state.players[myPlayerId]){
+        const p=state.players[myPlayerId];const btn=document.getElementById('passBtn');if(btn){btn.classList.toggle('disabled',!p.passReady);btn.textContent=p.passReady?'PASSAR 🍍':`${(p.passCooldown/1000).toFixed(1)}s`;}}
+    });
+    socket.on('minigame_result',({ranking,round})=>{const me=ranking.find(r=>r.playerId===myPlayerId);const pos=ranking.findIndex(r=>r.playerId===myPlayerId)+1;const medals=['🥇','🥈','🥉'];const medal=pos<=3?medals[pos-1]:`${pos}º`;const pts=me?(me.points??me.score??0):0;resultTitle.textContent=`FIM DA RODADA ${round}`;resultScore.textContent=`${medal}  ${pts} pontos`;resultDetails.textContent=ranking.map((r,i)=>`${i+1}º ${r.name||r.playerId.slice(0,4)}: ${r.points??r.score??0}pts`).join(' | ');resultOverlay.classList.add('active');setTimeout(()=>resultOverlay.classList.remove('active'),3000);});
+    socket.on('score_update',()=>{});
+    socket.on('game_over',({finalRanking,winner})=>{const me=finalRanking.find(r=>r.playerId===myPlayerId);const isWinner=myPlayerId===winner;winnerName.textContent=isWinner?'🎉 VOCÊ VENCEU! 🎉':`Vencedor: ${finalRanking.find(r=>r.playerId===winner)?.name||'Jogador'}`;finalRanking.innerHTML=finalRanking.map((r,i)=>{const name=r.name||r.playerId.slice(0,4);const total=r.total??0;const me=r.playerId===myPlayerId?' (VOCÊ)':'';return`<div style="padding:8px;margin:4px 0;background:${r.playerId===myPlayerId?'#e91e63':'#2d2d44'};border-radius:8px;">${i+1}º ${name}${me} - ${total} pts</div>`;}).join('');finalOverlay.classList.add('active');});
+  </script>
+</body>
+</html>
